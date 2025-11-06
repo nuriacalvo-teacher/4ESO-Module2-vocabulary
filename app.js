@@ -1,4 +1,4 @@
-// app.js
+// app.js - Versión actualizada con botón "Siguiente" en Multiple Choice
 // Utilidades
 const $ = sel => document.querySelector(sel);
 const $$ = sel => Array.from(document.querySelectorAll(sel));
@@ -115,17 +115,17 @@ const E1_MC = [
   { q:'The bridge structure uses stainless ____.', opts:['steel','brick','advice','warning'], a:'steel', exp:'"steel" = acero.' },
   { q:'She is a ____ teacher and students respect her.', opts:['natural leader','inhabitant','landmark','lift'], a:'natural leader', exp:'"natural leader" = líder por naturaleza.' },
   { q:'This is the city\'s most famous ____.', opts:['landmark','block of flats','office block','warning'], a:'landmark', exp:'"landmark" = monumento/lugar famoso.' },
-  { q:'Please ____ your shoes before entering the room.', opts:['remove','operate','review','warn'], a:'remove', exp:'"remove" = quitar/retirar.' },
+  { q:'He spilled coffee on the table; please ____ it.', opts:['remove','operate','review','warn'], a:'remove', exp:'"remove" = quitar/retirar.' },
   { q:'Try not to ____.', opts:['spill','melt','attach','surround'], a:'spill', exp:'"spill" = derramar.' },
   { q:'The houses ____ across the valley.', opts:['are spread out','take for granted','turn into','stick to'], a:'are spread out', exp:'"spread out" = estar extendidas.' },
-  { q:'If you ignore the context, you completely ____.', opts:['miss the point','make a point of','point out','warn'], a:'miss the point', exp:'"miss the point" = no entender la cuestión.' },
-  { q:'He tried to ____ during the debate.', opts:["prove his point",'advert','warning','review'], a:"prove his point", exp:'Modismo: "prove one\'s point" en contexto de debate.' },
+  { q:'She tends to ____ little details in the explanation.', opts:['miss the point','make a point of','point out','warn'], a:'miss the point', exp:'"miss the point" = no entender la cuestión.' },
+  { q:'He tried to ____ during the debate.', opts:["prove one's point",'advert','warning','review'], a:"prove one's point", exp:'Modismo: "prove one\'s point" en contexto de debate.' },
   { q:'There is ____ arguing with him; he never listens.', opts:["no point in",'advice','a close shave','remarkable'], a:"no point in", exp:'"There is no point in …" = no tiene sentido.' },
-  { q:'Let's ____ this new café downtown.', opts:['check (something) out','operate','attach','inhabitant'], a:'check (something) out', exp:'"check out" = mirar/probar un sitio.' },
+  { q:'Please ____ this new café downtown.', opts:['check (something) out','operate','attach','inhabitant'], a:'check (something) out', exp:'"check out" = mirar/probar un sitio.' },
   { q:'The company moved to a modern ____.', opts:['office block','block of flats','skyscraper','landmark'], a:'office block', exp:'"office block" = bloque de oficinas.' },
   { q:'He lives in a ____, not a detached house.', opts:['block of flats','close-knit','review','warning'], a:'block of flats', exp:'"block of flats" = bloque de pisos.' },
   { q:'The city is ____ by mountains.', opts:['surrounded','contained','removed','attached'], a:'surrounded', exp:'Pasiva de "surround" = rodear.' },
-  { q:'Don\'t ____ your family for granted; you never know how long you’ll have them.', opts:['take','turn into','stick to','attempt'], a:'take for granted', exp:'"take for granted" = dar por hecho.' },
+  { q:'Don\'t ____ your health; look after yourself.', opts:['take for granted','turn into','stick to','attempt'], a:'take for granted', exp:'"take for granted" = dar por hecho.' },
   { q:'Ice ____ when the temperature rises.', opts:['melts','removes','spills','attaches'], a:'melts', exp:'3ª persona de "melt".' },
   { q:'She is very ____ to criticism.', opts:['sensitive','successful','well-liked','gifted'], a:'sensitive', exp:'"sensitive to" = sensible a.' },
   { q:'Her work was truly ____.', opts:['outstanding','warning','advice','review'], a:'outstanding', exp:'"outstanding" = excepcional.' },
@@ -170,102 +170,27 @@ const E2_FILL = [
 ];
 
 const E3_REL = [
-  { es:'La mujer que vive aquí es arquitecta.', en:[
-    'The woman who lives here is an architect',
-    'The woman that lives here is an architect'
-  ]},
-  { es:'El profesor, que es muy querido, nos ayudó.', en:[
-    'The teacher, who is well-liked, helped us',
-    'The teacher who is well-liked helped us' // también válida sin comas si se interpreta como definitoria
-  ]},
-  { es:'El puente, que es de acero, es un hito de la ciudad.', en:[
-    'The bridge, which is made of steel, is a city landmark',
-    'The bridge, which is made of steel, is a landmark of the city'
-  ]},
-  { es:'El libro que compré ayer es increíble.', en:[
-    'The book which I bought yesterday is incredible',
-    'The book that I bought yesterday is incredible',
-    'The book I bought yesterday is incredible'
-  ]},
-  { es:'El ingeniero cuyo proyecto fue aprobado trabaja aquí.', en:[
-    'The engineer whose project was approved works here'
-  ]},
-  { es:'El barrio donde vivimos tiene buenas instalaciones.', en:[
-    'The neighborhood where we live has good facilities',
-    'The neighbourhood where we live has good facilities'
-  ]},
-  { es:'El día cuando terminaron la obra fue soleado.', en:[
-    'The day when they finished the construction was sunny',
-    'The day they finished the construction was sunny',
-    'The day on which they finished the construction was sunny'
-  ]},
-  { es:'No entiendo la razón por la que derribaron el edificio.', en:[
-    'I do not understand the reason why they pulled down the building',
-    'I do not understand the reason they pulled down the building',
-    "I don't understand why they pulled down the building"
-  ]},
-  { es:'Ese es el rascacielos que construyeron el año pasado.', en:[
-    'That is the skyscraper which they put up last year',
-    'That is the skyscraper that they put up last year',
-    'That is the skyscraper they put up last year',
-    'That is the skyscraper they built last year'
-  ]},
-  { es:'La persona a la que advertí no me escuchó.', en:[
-    'The person whom I warned did not listen to me',
-    'The person who I warned did not listen to me',
-    'The person I warned did not listen to me'
-  ]},
-  { es:'La fábrica que derribaron contenía maquinaria antigua.', en:[
-    'The factory which they pulled down contained old machinery',
-    'The factory that they pulled down contained old machinery',
-    'The factory they pulled down contained old machinery'
-  ]},
-  { es:'El edificio cuyo ascensor está roto tiene veinte plantas.', en:[
-    'The building whose lift is broken has twenty storeys',
-    'The building whose elevator is broken has twenty stories',
-    'The building whose lift is broken has twenty floors'
-  ]},
-  { es:'Los habitantes que viven allí son muy amables.', en:[
-    'The inhabitants who live there are very friendly',
-    'The inhabitants that live there are very friendly'
-  ]},
-  { es:'El bloque de pisos donde viven es de muchos pisos.', en:[
-    'The block of flats where they live is high-rise',
-    'The block of flats where they live is a high-rise building',
-    'The apartment building where they live is high-rise'
-  ]},
-  { es:'El monumento que señalaron es valioso para la ciudad.', en:[
-    'The landmark which they pointed out is valuable to the city',
-    'The landmark that they pointed out is valuable to the city',
-    'The landmark they pointed out is valuable to the city'
-  ]},
-  { es:'La familia, que es muy unida, vive cerca.', en:[
-    'The family, which is very close-knit, lives nearby',
-    'The family, who are very close-knit, live nearby'
-  ]},
-  { es:'La razón por la que no discutimos es que no tiene sentido.', en:[
-    'The reason why we do not argue is that there is no point in it',
-    'The reason we do not argue is that there is no point in it',
-    "The reason we don’t argue is that there’s no point in it"
-  ]},
-  { es:'El ingeniero que dirige la obra es un líder por naturaleza.', en:[
-    'The engineer who leads the project is a natural leader',
-    'The engineer that leads the project is a natural leader'
-  ]},
-  { es:'El edificio que construyeron está rodeado de montañas.', en:[
-    'The building which they put up is surrounded by mountains',
-    'The building that they put up is surrounded by mountains',
-    'The building they put up is surrounded by mountains',
-    'The building they built is surrounded by mountains'
-  ]},
-  { es:'La etiqueta que se pega al cristal no se quita fácilmente.', en:[
-    'The label which sticks to the glass does not remove easily',
-    'The label that sticks to the glass does not remove easily',
-    'The label sticking to the glass does not remove easily',
-    'The sticker that sticks to the glass is not easy to remove'
-  ]}
+  { es:'La mujer que vive aquí es arquitecta.', en:['The woman who lives here is an architect','The woman that lives here is an architect']},
+  { es:'El profesor, que es muy querido, nos ayudó.', en:['The teacher, who is well-liked, helped us']},
+  { es:'El puente, que es de acero, es un hito de la ciudad.', en:['The bridge, which is made of steel, is a city landmark']},
+  { es:'El libro que compré ayer es increíble.', en:['The book which I bought yesterday is incredible','The book that I bought yesterday is incredible','The book I bought yesterday is incredible']},
+  { es:'El ingeniero cuyo proyecto fue aprobado trabaja aquí.', en:['The engineer whose project was approved works here']},
+  { es:'El barrio donde vivimos tiene buenas instalaciones.', en:['The neighborhood where we live has good facilities','The neighbourhood where we live has good facilities']},
+  { es:'El día cuando terminaron la obra fue soleado.', en:['The day when they finished the construction was sunny','The day they finished the construction was sunny']},
+  { es:'No entiendo la razón por la que derribaron el edificio.', en:['I do not understand the reason why they pulled down the building','I do not understand the reason they pulled down the building']},
+  { es:'Ese es el rascacielos que construyeron el año pasado.', en:['That is the skyscraper which they put up last year','That is the skyscraper that they put up last year','That is the skyscraper they put up last year']},
+  { es:'La persona a la que advertí no me escuchó.', en:['The person whom I warned did not listen to me','The person who I warned did not listen to me','The person I warned did not listen to me']},
+  { es:'La fábrica que derribaron contenía maquinaria antigua.', en:['The factory which they pulled down contained old machinery','The factory that they pulled down contained old machinery','The factory they pulled down contained old machinery']},
+  { es:'El edificio cuyo ascensor está roto tiene veinte plantas.', en:['The building whose lift is broken has twenty storeys','The building whose elevator is broken has twenty stories','The building whose lift is broken has twenty floors']},
+  { es:'Los habitantes que viven allí son muy amables.', en:['The inhabitants who live there are very friendly','The inhabitants that live there are very friendly']},
+  { es:'El bloque de pisos donde viven es de muchos pisos.', en:['The block of flats where they live is high-rise','The block of flats where they live is a high-rise building']},
+  { es:'El monumento que señalaron es valioso para la ciudad.', en:['The landmark which they pointed out is valuable to the city','The landmark that they pointed out is valuable to the city','The landmark they pointed out is valuable to the city']},
+  { es:'La familia, que es muy unida, vive cerca.', en:['The family, which is very close-knit, lives nearby']},
+  { es:'La razón por la que no discutimos es que no tiene sentido.', en:['The reason why we do not argue is that there is no point in it','The reason we do not argue is that there is no point in it']},
+  { es:'El ingeniero que dirige la obra es un líder por naturaleza.', en:['The engineer who leads the project is a natural leader','The engineer that leads the project is a natural leader']},
+  { es:'El edificio que construyeron está rodeado de montañas.', en:['The building which they put up is surrounded by mountains','The building that they put up is surrounded by mountains','The building they put up is surrounded by mountains']},
+  { es:'La etiqueta que se pega al cristal no se quita fácilmente.', en:['The label which sticks to the glass does not remove easily','The label that sticks to the glass does not remove easily','The label sticking to the glass does not remove easily']}
 ];
-
 
 // Navegación
 function go(id){
@@ -367,6 +292,7 @@ function renderExercise(){
     $('#inputBox').style.display='none';
     $('#hintSpan').textContent='';
     $('#exQuestion').textContent = item.q;
+    $('#nextMCBtn').style.display='none'; // Oculta el botón al mostrar nueva pregunta
     const box = $('#mcOptions');
     box.innerHTML = '';
     const opts = shuffle(item.opts.slice());
@@ -379,9 +305,7 @@ function renderExercise(){
         if(correct){ div.classList.add('correct'); setFeedback(true, '✔ Correcto'); exScore++; }
         else{ div.classList.add('wrong'); setFeedback(false, '✗ Incorrecto. Correcta: '+item.a+(item.exp?(' — '+item.exp):'')); }
         $$('.option').forEach(o=>o.style.pointerEvents='none');
-        $('#nextMCBtn').style.display='inline-flex'; // <--- MUESTRA EL BOTÓN
-        // setTimeout(nextStep, 650);
-        
+        $('#nextMCBtn').style.display='inline-flex'; // Muestra el botón después de responder
       });
       box.appendChild(div);
     });
@@ -417,11 +341,10 @@ function checkInputAnswer(){
   }
   if(ok){ setFeedback(true,'✔ Correcto'); exScore++; }
   else{ setFeedback(false, explain); }
-
 }
 $('#submitAnswer').addEventListener('click', checkInputAnswer);
 $('#skipBtn').addEventListener('click', nextStep);
-$('#nextMCBtn').addEventListener('click', nextStep);  // <--- NUEVA LÍNEA
+$('#nextMCBtn').addEventListener('click', nextStep);
 $('#quitExercise').addEventListener('click', ()=>go('exercises'));
 
 function nextStep(){
