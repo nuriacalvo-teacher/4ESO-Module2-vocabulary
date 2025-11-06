@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>MODULE 2: VOCABULARY</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="styles.css" rel="stylesheet" />
+</head>
+<body>
+  <header>
+    <h1>MODULE 2: VOCABULARY</h1>
+    <div class="student" id="studentLine">Alumno: — • Curso: 4ESO</div>
+    <nav class="top">
+      <button class="active" data-go="home">Inicio</button>
+      <button data-go="flashcards">Flashcards (Teoría)</button>
+      <button data-go="exercises">Ejercicios</button>
+      <button data-go="scores">Puntuación</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Inicio / Login -->
+    <section id="home" class="card">
+      <h2>Datos del alumno</h2>
+      <div class="row">
+        <div>
+          <label>Nombre</label>
+          <input id="firstName" placeholder="Nombre" />
+        </div>
+        <div>
+          <label>Apellido</label>
+          <input id="lastName" placeholder="Apellido" />
+        </div>
+        <div>
+          <label>Curso</label>
+          <select id="course">
+            <option selected>4ESO</option>
+          </select>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="startBtn">Empezar</button>
+        <span class="muted">Tu nombre, apellido y curso aparecerán en la página de puntuación.</span>
+      </div>
+    </section>
+
+    <!-- Flashcards -->
+    <section id="flashcards" class="card" style="display:none">
+      <div class="toolbar">
+        <div>
+          <span class="tag" id="fcCounter">1 / 1</span>
+          <span class="muted">Pulsa para girar la tarjeta.</span>
+        </div>
+        <div class="right">
+          <button class="btn ghost" id="shuffleBtn">Barajar</button>
+          <button class="btn ghost" id="resetBtn">Reiniciar</button>
+        </div>
+      </div>
+      <div class="flashcard" id="flashcard">
+        <div class="flash-face flash-front" id="flashFront" aria-label="front">
+          <div class="es-translation" id="fcEs">—</div>
+          <div class="es-example" id="fcEsEx">—</div>
+        </div>
+        <div class="flash-face flash-back" id="flashBack" style="display:none" aria-label="back">
+          <div class="en-head" id="fcEn">—</div>
+          <div class="en-example" id="fcEnEx">—</div>
+        </div>
+      </div>
+      <div class="flash-actions">
+        <button class="btn ghost" id="prevCard">← Anterior</button>
+        <button class="btn" id="flipCard">Girar</button>
+        <button class="btn ghost" id="nextCard">Siguiente →</button>
+      </div>
+    </section>
+
+    <!-- Menú de ejercicios -->
+    <section id="exercises" class="card" style="display:none">
+      <h2>Ejercicios</h2>
+      <p class="muted">Completa los tres apartados; puedes navegar libremente entre teoría, ejercicios y puntuación.</p>
+      <div class="grid-3">
+        <div class="card">
+          <div class="pill">Ejercicio 1</div>
+          <h3>Multiple Choice (30)</h3>
+          <p class="muted">Rellena el hueco eligiendo 1 de 4 opciones (solo una correcta).</p>
+          <button class="btn" data-start="mc">Empezar</button>
+        </div>
+        <div class="card">
+          <div class="pill">Ejercicio 2</div>
+          <h3>Blanks con pista (30)</h3>
+          <p class="muted">Escribe en inglés la palabra/expresión indicada en español.</p>
+          <button class="btn" data-start="fill">Empezar</button>
+        </div>
+        <div class="card">
+          <div class="pill">Ejercicio 3</div>
+          <h3>Traducción con relativos (20)</h3>
+          <p class="muted">Traduce (WHO, WHICH, WHOSE, WHERE, WHEN, WHY; "that" cuando se permita).</p>
+          <button class="btn" data-start="rel">Empezar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contenedor de ejercicio -->
+    <section id="exerciseBox" class="card" style="display:none">
+      <div class="pill" id="exLabel">Ejercicio</div>
+      <div class="question" id="exQuestion">—</div>
+      <div id="mcBox" style="display:none">
+        <div class="options" id="mcOptions"></div>
+        <button class="btn" id="nextMCBtn" style="display:none;margin-top:12px">Siguiente →</button>
+      </div>
+      <div id="inputBox" style="display:none">
+        <input id="exInput" placeholder="Escribe tu respuesta" />
+        <div class="input-actions">
+          <button class="btn" id="submitAnswer">Comprobar</button>
+          <button class="btn ghost" id="skipBtn">Siguiente</button>
+          <span class="counter" id="hintSpan"></span>
+        </div>
+      </div>
+      <div class="feedback" id="exFeedback"></div>
+      <div class="counter" id="exCounter">1 / 30</div>
+      <div class="bottom-actions">
+        <button class="btn secondary" id="quitExercise">Volver a ejercicios</button>
+      </div>
+    </section>
+
+    <!-- Puntuaciones -->
+    <section id="scores" class="card" style="display:none">
+      <h2>Puntuación</h2>
+      <div class="score-row">
+        <div><strong id="studentNameScore" style="color:#0f355f"></strong> • <span id="courseScore" class="muted">4ESO</span></div>
+        <div class="muted">"app made by Nuria Calvo"</div>
+      </div>
+      <div class="card">
+        <div class="score-row"><div>Exercise 1 - Multiple Choice</div><div class="score-val" id="s1">—</div></div>
+        <div class="score-row"><div>Exercise 2 - Fill Blanks</div><div class="score-val" id="s2">—</div></div>
+        <div class="score-row"><div>Exercise 3 - Translations</div><div class="score-val" id="s3">—</div></div>
+        <div class="score-row"><div>Overall / Average</div><div class="score-val" id="sAll">—</div></div>
+      </div>
+      <div class="card">
+        <div id="statusMsg" class="center">—</div>
+        <div class="center btns">
+          <button class="btn" data-go="exercises">Reintentar ejercicios</button>
+          <button class="btn ghost" data-go="flashcards">Volver a teoría</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span class="brand">app made by Nuria Calvo</span>
+    <span class="muted">© 2025</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
