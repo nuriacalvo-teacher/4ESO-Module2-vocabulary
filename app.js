@@ -119,7 +119,7 @@ const E1_MC = [
   { q:'Try not to ____.', opts:['spill','melt','attach','surround'], a:'spill', exp:'"spill" = derramar.' },
   { q:'The houses ____ across the valley.', opts:['are spread out','take for granted','turn into','stick to'], a:'are spread out', exp:'"spread out" = estar extendidas.' },
   { q:'If you ignore the context, you completely ____.', opts:['miss the point','make a point of','point out','warn'], a:'miss the point', exp:'"miss the point" = no entender la cuestión.' },
-  { q:'He tried to ____ during the debate.', opts:["prove his point",'advert','warning','review'], a:"prove one's point", exp:'Modismo: "prove one\'s point" en contexto de debate.' },
+  { q:'He tried to ____ during the debate.', opts:["prove his point",'advert','warning','review'], a:"prove his point", exp:'Modismo: "prove one\'s point" en contexto de debate.' },
   { q:'There is ____ arguing with him; he never listens.', opts:["no point in",'advice','a close shave','remarkable'], a:"no point in", exp:'"There is no point in …" = no tiene sentido.' },
   { q:'Let's ____ this new café downtown.', opts:['check (something) out','operate','attach','inhabitant'], a:'check (something) out', exp:'"check out" = mirar/probar un sitio.' },
   { q:'The company moved to a modern ____.', opts:['office block','block of flats','skyscraper','landmark'], a:'office block', exp:'"office block" = bloque de oficinas.' },
