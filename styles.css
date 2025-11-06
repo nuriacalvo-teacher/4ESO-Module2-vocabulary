@@ -1,1253 +1,483 @@
-:root {
-  /* Primitive Color Tokens */
-  --color-white: rgba(255, 255, 255, 1);
-  --color-black: rgba(0, 0, 0, 1);
-  --color-cream-50: rgba(252, 252, 249, 1);
-  --color-cream-100: rgba(255, 255, 253, 1);
-  --color-gray-200: rgba(245, 245, 245, 1);
-  --color-gray-300: rgba(167, 169, 169, 1);
-  --color-gray-400: rgba(119, 124, 124, 1);
-  --color-slate-500: rgba(98, 108, 113, 1);
-  --color-brown-600: rgba(94, 82, 64, 1);
-  --color-charcoal-700: rgba(31, 33, 33, 1);
-  --color-charcoal-800: rgba(38, 40, 40, 1);
-  --color-slate-900: rgba(19, 52, 59, 1);
-  --color-teal-300: rgba(50, 184, 198, 1);
-  --color-teal-400: rgba(45, 166, 178, 1);
-  --color-teal-500: rgba(33, 128, 141, 1);
-  --color-teal-600: rgba(29, 116, 128, 1);
-  --color-teal-700: rgba(26, 104, 115, 1);
-  --color-teal-800: rgba(41, 150, 161, 1);
-  --color-red-400: rgba(255, 84, 89, 1);
-  --color-red-500: rgba(192, 21, 47, 1);
-  --color-orange-400: rgba(230, 129, 97, 1);
-  --color-orange-500: rgba(168, 75, 47, 1);
+// app.js
+// Utilidades
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+// Normaliza: minúsculas, sin tildes, sin puntuación, espacios simples.
+// Evita Unicode property escapes para máxima compatibilidad.
+const norm = s => (s||'')
+  .toLowerCase()
+  .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+  .replace(/[.,;:!?()\"'`´]/g,'')
+  .replace(/\s+/g,' ')
+  .trim();
 
-  /* RGB versions for opacity control */
-  --color-brown-600-rgb: 94, 82, 64;
-  --color-teal-500-rgb: 33, 128, 141;
-  --color-slate-900-rgb: 19, 52, 59;
-  --color-slate-500-rgb: 98, 108, 113;
-  --color-red-500-rgb: 192, 21, 47;
-  --color-red-400-rgb: 255, 84, 89;
-  --color-orange-500-rgb: 168, 75, 47;
-  --color-orange-400-rgb: 230, 129, 97;
+const shuffle = arr => {
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+};
 
-  /* Background color tokens (Light Mode) */
-  --color-bg-1: rgba(59, 130, 246, 0.08); /* Light blue */
-  --color-bg-2: rgba(245, 158, 11, 0.08); /* Light yellow */
-  --color-bg-3: rgba(34, 197, 94, 0.08); /* Light green */
-  --color-bg-4: rgba(239, 68, 68, 0.08); /* Light red */
-  --color-bg-5: rgba(147, 51, 234, 0.08); /* Light purple */
-  --color-bg-6: rgba(249, 115, 22, 0.08); /* Light orange */
-  --color-bg-7: rgba(236, 72, 153, 0.08); /* Light pink */
-  --color-bg-8: rgba(6, 182, 212, 0.08); /* Light cyan */
+// Estado
+const state = {
+  student:{first:'',last:'',course:'4ESO'},
+  scores:{mc:null, fill:null, rel:null},
+  fcIndex:0,
+  fcOrder:[]
+};
 
-  /* Semantic Color Tokens (Light Mode) */
-  --color-background: var(--color-cream-50);
-  --color-surface: var(--color-cream-100);
-  --color-text: var(--color-slate-900);
-  --color-text-secondary: var(--color-slate-500);
-  --color-primary: var(--color-teal-500);
-  --color-primary-hover: var(--color-teal-600);
-  --color-primary-active: var(--color-teal-700);
-  --color-secondary: rgba(var(--color-brown-600-rgb), 0.12);
-  --color-secondary-hover: rgba(var(--color-brown-600-rgb), 0.2);
-  --color-secondary-active: rgba(var(--color-brown-600-rgb), 0.25);
-  --color-border: rgba(var(--color-brown-600-rgb), 0.2);
-  --color-btn-primary-text: var(--color-cream-50);
-  --color-card-border: rgba(var(--color-brown-600-rgb), 0.12);
-  --color-card-border-inner: rgba(var(--color-brown-600-rgb), 0.12);
-  --color-error: var(--color-red-500);
-  --color-success: var(--color-teal-500);
-  --color-warning: var(--color-orange-500);
-  --color-info: var(--color-slate-500);
-  --color-focus-ring: rgba(var(--color-teal-500-rgb), 0.4);
-  --color-select-caret: rgba(var(--color-slate-900-rgb), 0.8);
+// Vocabulario con ejemplos (ES anverso / EN reverso)
+const VOCAB = [
+  {en:'attach', es:'pegar(se); relacionar; adjuntar', esEx:'Adjunta este documento a tu email.', enEx:'Attach this document to your email.'},
+  {en:'attempt', es:'intentar', esEx:'Voy a intentar resolver este problema.', enEx:'I will attempt to solve this problem.'},
+  {en:'block of flats', es:'bloque de pisos', esEx:'Vivimos en un bloque de pisos céntrico.', enEx:'We live in a central block of flats.'},
+  {en:'brick', es:'ladrillo', esEx:'La casa está construida con ladrillos rojos.', enEx:'The house is built with red bricks.'},
+  {en:'bright', es:'listo/a, inteligente', esEx:'Mi hermana es muy lista para los idiomas.', enEx:'My sister is very bright at languages.'},
+  {en:'check (something) out', es:'mirar (algo)', esEx:'Deberías mirar ese nuevo restaurante.', enEx:'You should check out that new restaurant.'},
+  {en:'common sense', es:'sentido común', esEx:'Hace falta sentido común en estos temas.', enEx:'You need common sense in these matters.'},
+  {en:'concrete', es:'hormigón', esEx:'El suelo está hecho de hormigón.', enEx:'The floor is made of concrete.'},
+  {en:'contain', es:'contener', esEx:'La caja contiene libros valiosos.', enEx:'The box contains valuable books.'},
+  {en:'end up', es:'terminar', esEx:'Terminamos comiendo pizza.', enEx:'We ended up eating pizza.'},
+  {en:'facilities', es:'instalaciones', esEx:'El gimnasio tiene excelentes instalaciones.', enEx:'The gym has excellent facilities.'},
+  {en:'figure out', es:'entender; darse cuenta de', esEx:'Por fin entendí el problema.', enEx:'I finally figured out the problem.'},
+  {en:'find out', es:'descubrir; averiguar', esEx:'Descubrimos que había ganado.', enEx:'We found out she had won.'},
+  {en:'genius', es:'genio', esEx:'Einstein fue un genio.', enEx:'Einstein was a genius.'},
+  {en:'gifted', es:'talentoso/a', esEx:'Es un alumno talentoso.', enEx:'He is a gifted student.'},
+  {en:'hidden', es:'oculto/a', esEx:'El tesoro estaba oculto.', enEx:'The treasure was hidden.'},
+  {en:'high-rise', es:'de muchos pisos', esEx:'Trabaja en un edificio de muchos pisos.', enEx:'He works in a high-rise building.'},
+  {en:'inhabitant', es:'habitante', esEx:'Los habitantes son amables.', enEx:'The inhabitants are friendly.'},
+  {en:'landmark', es:'lugar/monumento famoso', esEx:'Es un monumento famoso de la ciudad.', enEx:'It is a famous landmark in the city.'},
+  {en:'lift', es:'ascensor', esEx:'El ascensor está averiado.', enEx:'The lift is out of order.'},
+  {en:'make the most of', es:'aprovechar al máximo', esEx:'Aprovecha al máximo el tiempo.', enEx:'Make the most of your time.'},
+  {en:'melt', es:'derretir(se)', esEx:'El hielo se derrite al sol.', enEx:'Ice melts in the sun.'},
+  {en:'multitasking', es:'(hacer) multitarea', esEx:'Hacer multitarea reduce la concentración.', enEx:'Multitasking reduces concentration.'},
+  {en:'natural leader', es:'líder por naturaleza', esEx:'Ella es una líder innata.', enEx:'She is a natural leader.'},
+  {en:'office block', es:'bloque de oficinas', esEx:'Se mudaron a un bloque de oficinas.', enEx:'They moved to an office block.'},
+  {en:'operate', es:'manejar; funcionar', esEx:'¿Sabes manejar esta máquina?', enEx:'Do you know how to operate this machine?'},
+  {en:'outstanding', es:'excepcional', esEx:'Su trabajo fue excepcional.', enEx:'Her work was outstanding.'},
+  {en:'property', es:'propiedad, terreno', esEx:'Compraron una gran propiedad.', enEx:'They bought a large property.'},
+  {en:'pull down', es:'derribar', esEx:'Van a derribar el edificio.', enEx:'They are going to pull down the building.'},
+  {en:'put up', es:'construir', esEx:'Construyeron un hospital nuevo.', enEx:'They put up a new hospital.'},
+  {en:'remove', es:'quitar(se)', esEx:'Quitaron los carteles viejos.', enEx:'They removed the old posters.'},
+  {en:'sensitive', es:'sensible', esEx:'Es muy sensible con las críticas.', enEx:'She is very sensitive to criticism.'},
+  {en:'skyscraper', es:'rascacielos', esEx:'La ciudad tiene rascacielos modernos.', enEx:'The city has modern skyscrapers.'},
+  {en:'spill', es:'derramar(se)', esEx:'No derrames el café.', enEx:'Do not spill the coffee.'},
+  {en:'spread out', es:'extendido/a', esEx:'Las casas están extendidas por el valle.', enEx:'The houses are spread out across the valley.'},
+  {en:'steel', es:'acero', esEx:'El puente es de acero.', enEx:'The bridge is made of steel.'},
+  {en:'stick to', es:'pegarse a; ceñirse a', esEx:'Cumple el plan y cíñete a él.', enEx:'Follow the plan and stick to it.'},
+  {en:'storey', es:'piso, planta', esEx:'El edificio tiene 20 pisos.', enEx:'The building has 20 storeys.'},
+  {en:'strength', es:'punto fuerte', esEx:'La comunicación es su punto fuerte.', enEx:'Communication is her strength.'},
+  {en:'successful', es:'exitoso/a', esEx:'Fue exitoso con su negocio.', enEx:'He was successful with his business.'},
+  {en:'surround', es:'rodear', esEx:'La ciudad está rodeada de montañas.', enEx:'The city is surrounded by mountains.'},
+  {en:'take for granted', es:'dar por hecho', esEx:'No des por hecho tu salud.', enEx:'Do not take your health for granted.'},
+  {en:'turn into', es:'convertir(se) en', esEx:'La oruga se convierte en mariposa.', enEx:'The caterpillar turns into a butterfly.'},
+  {en:'valuable', es:'valioso/a', esEx:'Es un consejo muy valioso.', enEx:'It is very valuable advice.'},
+  {en:'warn', es:'advertir, avisar', esEx:'Me advirtió del peligro.', enEx:'He warned me about the danger.'},
+  {en:'weakness', es:'punto débil', esEx:'Reconoce tu punto débil.', enEx:'Recognize your weakness.'},
+  {en:'well-liked', es:'querido/a', esEx:'Es una profesora muy querida.', enEx:'She is a well-liked teacher.'},
+  {en:'amazing', es:'asombroso/a', esEx:'La vista era asombrosa.', enEx:'The view was amazing.'},
+  {en:'outstanding (adj)', es:'excepcional', esEx:'Un logro excepcional.', enEx:'An outstanding achievement.'},
+  {en:'remarkable', es:'notable', esEx:'Hizo un progreso notable.', enEx:'She made remarkable progress.'},
+  {en:'fantastic', es:'fantástico/a', esEx:'Fue un concierto fantástico.', enEx:'It was a fantastic concert.'},
+  {en:'incredible', es:'increíble', esEx:'Una historia increíble.', enEx:'An incredible story.'},
+  {en:'unbelievable', es:'increíble (difícil de creer)', esEx:'Resultados difíciles de creer.', enEx:'Unbelievable results.'},
+  {en:'a close relationship', es:'relación estrecha', esEx:'Tienen una relación estrecha.', enEx:'They have a close relationship.'},
+  {en:'a close shave', es:'un susto por poco', esEx:'Fue un susto por poco.', enEx:'It was a close shave.'},
+  {en:'at close range', es:'a corta distancia', esEx:'Lo vio a corta distancia.', enEx:'He saw it at close range.'},
+  {en:'close-up', es:'primer plano', esEx:'Hicieron un primer plano.', enEx:'They took a close-up.'},
+  {en:'close at hand', es:'a mano', esEx:'Ten las llaves a mano.', enEx:'Keep the keys close at hand.'},
+  {en:'close-knit', es:'muy unido/a', esEx:'Una familia muy unida.', enEx:'A close-knit family.'},
+  {en:'advert', es:'anuncio', esEx:'Vi un anuncio en la tele.', enEx:'I saw an advert on TV.'},
+  {en:'warning', es:'advertencia', esEx:'Ignoró la advertencia.', enEx:'He ignored the warning.'},
+  {en:'advice', es:'consejo(s)', esEx:'Necesito tus consejos.', enEx:'I need your advice.'},
+  {en:"prove one's point", es:'demostrar su argumento', esEx:'Intentó demostrar su argumento.', enEx:"He tried to prove his point."},
+  {en:'make a point of', es:'esforzarse en; no dejar de', esEx:'Siempre se esfuerza en llegar puntual.', enEx:'She always makes a point of being on time.'},
+  {en:'miss the point', es:'no entender la cuestión', esEx:'No entendiste la cuestión.', enEx:'You missed the point.'},
+  {en:"there's no point in", es:'no tiene sentido', esEx:'No tiene sentido discutir.', enEx:"There is no point in arguing."},
+  {en:'point of view', es:'punto de vista', esEx:'Respeto tu punto de vista.', enEx:'I respect your point of view.'},
+  {en:'point out', es:'señalar; indicar', esEx:'Señaló el error.', enEx:'He pointed out the mistake.'},
+  {en:'review', es:'reseña; repasar', esEx:'Escribió una reseña del libro.', enEx:'She wrote a book review.'},
+  {en:'revision', es:'repaso', esEx:'Hice un repaso antes del examen.', enEx:'I did some revision before the exam.'}
+];
 
-  /* Common style patterns */
-  --focus-ring: 0 0 0 3px var(--color-focus-ring);
-  --focus-outline: 2px solid var(--color-primary);
-  --status-bg-opacity: 0.15;
-  --status-border-opacity: 0.25;
-  --select-caret-light: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23134252' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  --select-caret-dark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23f5f5f5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+// Bancos de ejercicios
+const E1_MC = [
+  { q:'She always ____ being on time.', opts:['make a point of','makes a point of','point out','points out'], a:'makes a point of', exp:'3ª persona del singular: “makes a point of being on time”.' },
+  { q:'He managed to ____ the error before printing.', opts:['point out','miss the point','review','attach'], a:'point out', exp:'“point out” = señalar/indicar un error.' },
+  { q:'They decided to ____ the old factory next month.', opts:['pull down','put up','lift','spread out'], a:'pull down', exp:'“pull down” = derribar un edificio.' },
+  { q:'The council will ____ a new bridge over the river.', opts:['put up','pull down','warn','remove'], a:'put up', exp:'“put up” = construir/levantar.' },
+  { q:'Please ____ the file to your email.', opts:['attach','attempt','review','operate'], a:'attach', exp:'“attach” = adjuntar un archivo.' },
+  { q:'He couldn’t ____ the problem, so he asked for help.', opts:['figure out','find out','stick to','melt'], a:'figure out', exp:'“figure out” = entender/descubrir cómo se hace.' },
+  { q:'We need to ____ whether the rumor is true.', opts:['find out','figure out','warn','contain'], a:'find out', exp:'“find out” = averiguar/descubrir.' },
+  { q:'The building has twenty ____.', opts:['storeys','skyscraper','brick','facilities'], a:'storeys', exp:'“storeys” = pisos/plantas.' },
+  { q:'The floor is made of ____.', opts:['concrete','steel','brick','advice'], a:'concrete', exp:'“concrete” = hormigón.' },
+  { q:'The bridge structure uses stainless ____.', opts:['steel','brick','advice','warning'], a:'steel', exp:'“steel” = acero.' },
+  { q:'She is a ____ and her classmates respect her.', opts:['natural leader','inhabitant','landmark','lift'], a:'natural leader', exp:'“natural leader” = líder por naturaleza.' },
+  { q:'This is the city’s most famous ____.', opts:['landmark','block of flats','office block','warning'], a:'landmark', exp:'“landmark” = monumento/lugar famoso.' },
+  { q:'He left some stains on the table; please ____ it.', opts:['remove','operate','review','warn'], a:'remove', exp:'“remove” = quitar/retirar.' },
+  { q:'Try not to ____.', opts:['spill','melt','attach','surround'], a:'spill', exp:'“spill” = derramar.' },
+  { q:'The houses ____ across the valley.', opts:['are spread out','take for granted','turn into','stick to'], a:'are spread out', exp:'“spread out” = estar extendidas.' },
+  { q:'She tends to ____ little details in the explanation.', opts:['miss the point','make a point of','point out','warn'], a:'miss the point', exp:'“miss the point” = no entender la cuestión.' },
+  { q:'He tried to ____ during the debate.', opts:["prove his point",'advert','warning','review'], a:"prove his point", exp:'Modismo: “prove one’s point” en contexto de debate.' },
+  { q:'There is ____ arguing with him; he never listens.', opts:["no point in",'advice','a close shave','remarkable'], a:"no point in", exp:'“There is no point in …” = no tiene sentido.' },
+  { q:'Let's ____ this new café downtown.', opts:['check out','operate','attach','inhabitant'], a:'check out', exp:'“check out” = mirar/probar un sitio.' },
+  { q:'The company moved to a modern ____.', opts:['office block','block of flats','skyscraper','landmark'], a:'office block', exp:'“office block” = bloque de oficinas.' },
+  { q:'He lives in a ____, not a detached house.', opts:['block of flats','close-knit','review','warning'], a:'block of flats', exp:'“block of flats” = bloque de pisos.' },
+  { q:'The city is ____ by mountains.', opts:['surrounded','contained','removed','attached'], a:'surrounded', exp:'Pasiva de “surround” = rodear.' },
+  { q:'Don’t ____ your health for granted; look after yourself.', opts:['take','turn into','stick to','attempt'], a:'take', exp:'“take for granted” = dar por hecho.' },
+  { q:'Ice ____ when the temperature rises.', opts:['melts','removes','spills','attaches'], a:'melts', exp:'3ª persona de “melt”.' },
+  { q:'She is very ____ to criticism.', opts:['sensitive','successful','well-liked','gifted'], a:'sensitive', exp:'“sensitive to” = sensible a.' },
+  { q:'Her work was truly ____.', opts:['outstanding','warning','advice','review'], a:'outstanding', exp:'“outstanding” = excepcional.' },
+  { q:'He was ____ with his new business.', opts:['successful','amazing','incredible','remarkable'], a:'successful', exp:'“successful” = exitoso.' },
+  { q:'They plan to ____ a pedestrian bridge downtown.', opts:['put up','pull down','warn','remove'], a:'put up', exp:'“put up” = construir.' },
+  { q:'Keep the manual ____, just in case.', opts:['close at hand','close-up','a close shave','close-knit'], a:'close at hand', exp:'“close at hand” = a mano.' },
+  { q:'The rescue was ____, but everyone was fine.', opts:['a close shave','point of view','advert','revision'], a:'a close shave', exp:'“a close shave” = por los pelos.' },
+  { q:'Let me share my ____ on this topic.', opts:['point of view','warning','advice','review'], a:'point of view', exp:'“point of view” = punto de vista.' },
+  { q:'We had a family that was very ____.', opts:['close-knit','remarkable','storey','skyscraper'], a:'close-knit', exp:'“close-knit” = muy unido.' },
+  { q:'He wrote a detailed ____ of the film.', opts:['review','revision','advert','warning'], a:'review', exp:'“review” = reseña.' },
+  { q:'I did some ____ before the test.', opts:['revision','review','advert','warning'], a:'revision', exp:'“revision” = repaso.' }
+];
 
-  /* RGB versions for opacity control */
-  --color-success-rgb: 33, 128, 141;
-  --color-error-rgb: 192, 21, 47;
-  --color-warning-rgb: 168, 75, 47;
-  --color-info-rgb: 98, 108, 113;
+const E2_FILL = [
+  { q:'Please ____ the file to your message. (adjuntar)', a:[ 'attach' ] },
+  { q:'We finally ____ how to fix it. (entender)', a:[ 'figured out','figure out' ] },
+  { q:'They want to ____ the old bridge. (derribar)', a:[ 'pull down' ] },
+  { q:'They will ____ a new sports hall. (construir)', a:[ 'put up','build' ] },
+  { q:'The box ____ two laptops. (contener)', a:[ 'contains','contain' ] },
+  { q:'New York has many ____. (rascacielos)', a:[ 'skyscrapers','skyscraper' ] },
+  { q:'Keep the keys ____. (a mano)', a:[ 'close at hand' ] },
+  { q:'She always ____ being polite. (esforzarse en)', a:[ 'makes a point of','make a point of' ] },
+  { q:'There is ____ arguing now. (no tiene sentido)', a:[ 'no point in' ] },
+  { q:'He ____ the mistake quickly. (señalar)', a:[ 'pointed out','point out' ] },
+  { q:'The gym has great ____. (instalaciones)', a:[ 'facilities' ] },
+  { q:'This bridge is made of ____. (acero)', a:[ 'steel' ] },
+  { q:'The houses are ____. (extendidas)', a:[ 'spread out' ] },
+  { q:'He tried to ____ with evidence. (demostrar su argumento)', a:[ "prove his point","prove one's point","prove their point" ] },
+  { q:'She is very ____. (sensible)', a:[ 'sensitive' ] },
+  { q:'He is a ____. (líder por naturaleza)', a:[ 'natural leader' ] },
+  { q:'I need your ____. (consejos)', a:[ 'advice' ] },
+  { q:'She wrote a film ____. (reseña)', a:[ 'review' ] },
+  { q:'I did my ____. (repaso)', a:[ 'revision' ] },
+  { q:'They live in a ____. (bloque de pisos)', a:[ 'block of flats' ] },
+  { q:'Please do not ____. (derramar)', a:[ 'spill' ] },
+  { q:'The ____ is broken. (ascensor)', a:[ 'lift','elevator' ] },
+  { q:'He is a very ____ student. (talentoso)', a:[ 'gifted' ] },
+  { q:'This was an ____ achievement. (excepcional)', a:[ 'outstanding','remarkable','amazing','incredible','fantastic','unbelievable' ] },
+  { q:'The city is ____ by hills. (rodeada)', a:[ 'surrounded','surround' ] },
+  { q:'Don’t take your friends ________. You never know when you will need them. (dar por hecho)', a:[ 'for granted' ] },
+  { q:'The caterpillar ____ a butterfly. (convertirse en)', a:[ 'turns into','turn into' ] },
+  { q:'The building has twenty ____. (pisos)', a:[ 'storeys','stories','floors' ] },
+  { q:'He tried to ____ the machine. (manejar)', a:[ 'operate' ] },
+  { q:'We ____ eating pizza. (terminar)', a:[ 'ended up','end up' ] }
+];
 
-  /* Typography */
-  --font-family-base: "FKGroteskNeue", "Geist", "Inter", -apple-system,
-    BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-family-mono: "Berkeley Mono", ui-monospace, SFMono-Regular, Menlo,
-    Monaco, Consolas, monospace;
-  --font-size-xs: 11px;
-  --font-size-sm: 12px;
-  --font-size-base: 14px;
-  --font-size-md: 14px;
-  --font-size-lg: 16px;
-  --font-size-xl: 18px;
-  --font-size-2xl: 20px;
-  --font-size-3xl: 24px;
-  --font-size-4xl: 30px;
-  --font-weight-normal: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 550;
-  --font-weight-bold: 600;
-  --line-height-tight: 1.2;
-  --line-height-normal: 1.5;
-  --letter-spacing-tight: -0.01em;
+const E3_REL = [
+  { es:'La mujer que vive aquí es arquitecta.', en:[
+    'The woman who lives here is an architect',
+    'The woman that lives here is an architect'
+  ]},
+  { es:'El profesor, que es muy querido, nos ayudó.', en:[
+    'The teacher, who is well-liked, helped us'
+  ]},
+  { es:'El puente, que es de acero, es un hito de la ciudad.', en:[
+    'The bridge, which is made of steel, is a city landmark'
+  ]},
+  { es:'El libro que compré ayer es increíble.', en:[
+    'The book which I bought yesterday is incredible',
+    'The book that I bought yesterday is incredible',
+    'The book I bought yesterday is incredible'
+  ]},
+  { es:'El ingeniero cuyo proyecto fue aprobado trabaja aquí.', en:[
+    'The engineer whose project was approved works here'
+  ]},
+  { es:'El barrio donde vivimos tiene buenas instalaciones.', en:[
+    'The neighborhood where we live has good facilities',
+    'The neighbourhood where we live has good facilities'
+  ]},
+  { es:'El día cuando terminaron la obra fue soleado.', en:[
+    'The day when they finished the construction was sunny',
+    'The day they finished the construction was sunny'
+  ]},
+  { es:'No entiendo la razón por la que derribaron el edificio.', en:[
+    'I do not understand the reason why they pulled down the building',
+    'I do not understand the reason they pulled down the building'
+  ]},
+  { es:'Ese es el rascacielos que construyeron el año pasado.', en:[
+    'That is the skyscraper which they put up last year',
+    'That is the skyscraper that they put up last year',
+    'That is the skyscraper they put up last year'
+  ]},
+  { es:'La persona a la que advertí no me escuchó.', en:[
+    'The person whom I warned did not listen to me',
+    'The person who I warned did not listen to me',
+    'The person I warned did not listen to me'
+  ]},
+  { es:'La fábrica que derribaron contenía maquinaria antigua.', en:[
+    'The factory which they pulled down contained old machinery',
+    'The factory that they pulled down contained old machinery',
+    'The factory they pulled down contained old machinery'
+  ]},
+  { es:'El edificio cuyo ascensor está roto tiene veinte plantas.', en:[
+    'The building whose lift is broken has twenty storeys',
+    'The building whose elevator is broken has twenty stories',
+    'The building whose lift is broken has twenty floors'
+  ]},
+  { es:'Los habitantes que viven allí son muy amables.', en:[
+    'The inhabitants who live there are very friendly',
+    'The inhabitants that live there are very friendly',
+    'The inhabitants living there are very friendly'
+  ]},
+  { es:'El bloque de pisos donde viven es de muchos pisos.', en:[
+    'The block of flats where they live is high-rise',
+    'The block of flats where they live is a high-rise building'
+  ]},
+  { es:'El monumento que señalaron es valioso para la ciudad.', en:[
+    'The landmark which they pointed out is valuable to the city',
+    'The landmark that they pointed out is valuable to the city',
+    'The landmark they pointed out is valuable to the city'
+  ]},
+  { es:'La familia, que es muy unida, vive cerca.', en:[
+    'The family, which is very close-knit, lives nearby',
+    'The family, who are very close-knit, live nearby'
+  ]},
+  { es:'La razón por la que no discutimos es que no tiene sentido.', en:[
+    'The reason why we do not argue is that there is no point in it',
+    'The reason we do not argue is that there is no point in it'
+  ]},
+  { es:'El ingeniero que dirige la obra es un líder por naturaleza.', en:[
+    'The engineer who leads the project is a natural leader',
+    'The engineer that leads the project is a natural leader'
+  ]},
+  { es:'El edificio que construyeron está rodeado de montañas.', en:[
+    'The building which they put up is surrounded by mountains',
+    'The building that they put up is surrounded by mountains',
+    'The building they put up is surrounded by mountains'
+  ]},
+  { es:'La etiqueta que se pega al cristal no se quita fácilmente.', en:[
+    'The label which sticks to the glass does not remove easily',
+    'The label that sticks to the glass does not remove easily',
+    'The label sticking to the glass does not remove easily'
+  ]}
+];
 
-  /* Spacing */
-  --space-0: 0;
-  --space-1: 1px;
-  --space-2: 2px;
-  --space-4: 4px;
-  --space-6: 6px;
-  --space-8: 8px;
-  --space-10: 10px;
-  --space-12: 12px;
-  --space-16: 16px;
-  --space-20: 20px;
-  --space-24: 24px;
-  --space-32: 32px;
+// Navegación
+function go(id){
+  ['home','flashcards','exercises','exerciseBox','scores'].forEach(s => {
+    document.getElementById(s).style.display = (s===id?'block':'none');
+  });
+  $$('.top button').forEach(b=>b.classList.toggle('active', b.dataset.go===id || (id==='home' && b.dataset.go==='home')));
+}
+$$('.top button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    if(b.dataset.go) go(b.dataset.go);
+  });
+});
 
-  /* Border Radius */
-  --radius-sm: 6px;
-  --radius-base: 8px;
-  --radius-md: 10px;
-  --radius-lg: 12px;
-  --radius-full: 9999px;
+// Inicio
+$('#startBtn').addEventListener('click', ()=>{
+  state.student.first = $('#firstName').value.trim();
+  state.student.last = $('#lastName').value.trim();
+  state.student.course = $('#course').value || '4ESO';
+  if(!state.student.first || !state.student.last){
+    alert('Por favor, escribe nombre y apellido.');
+    return;
+  }
+  $('#studentLine').textContent = `Alumno: ${state.student.first} ${state.student.last} • Curso: ${state.student.course}`;
+  go('flashcards');
+  updateScoresUI();
+});
 
-  /* Shadows */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.02);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.04),
-    0 2px 4px -1px rgba(0, 0, 0, 0.02);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.04),
-    0 4px 6px -2px rgba(0, 0, 0, 0.02);
-  --shadow-inset-sm: inset 0 1px 0 rgba(255, 255, 255, 0.15),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.03);
+// Flashcards
+function resetFlashcards(){
+  state.fcOrder = VOCAB.map((_,i)=>i);
+  state.fcIndex = 0;
+  renderFlashcard();
+}
+function renderFlashcard(){
+  const i = state.fcOrder[state.fcIndex] ?? 0;
+  const v = VOCAB[i];
+  $('#fcCounter').textContent = `${state.fcIndex+1} / ${VOCAB.length}`;
+  $('#flashFront').style.display='block';
+  $('#flashBack').style.display='none';
+  $('#fcEs').textContent = v.es;
+  $('#fcEsEx').textContent = v.esEx;
+  $('#fcEn').textContent = v.en;
+  $('#fcEnEx').textContent = v.enEx;
+}
+$('#flashcard').addEventListener('click', ()=>{
+  const front = $('#flashFront').style.display!=='none';
+  $('#flashFront').style.display = front?'none':'block';
+  $('#flashBack').style.display = front?'block':'none';
+});
+$('#flipCard').addEventListener('click', ()=>$('#flashcard').click());
+$('#prevCard').addEventListener('click', ()=>{ if(state.fcIndex>0){ state.fcIndex--; renderFlashcard(); } });
+$('#nextCard').addEventListener('click', ()=>{ if(state.fcIndex<VOCAB.length-1){ state.fcIndex++; renderFlashcard(); } });
+$('#shuffleBtn').addEventListener('click', ()=>{ state.fcOrder = shuffle(state.fcOrder); state.fcIndex = 0; renderFlashcard(); });
+$('#resetBtn').addEventListener('click', resetFlashcards);
 
-  /* Animation */
-  --duration-fast: 150ms;
-  --duration-normal: 250ms;
-  --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+// Ejercicios
+let currentEx = null; // 'mc' | 'fill' | 'rel'
+let exIndex = 0;
+let exBank = [];
+let exScore = 0;
 
-  /* Layout */
-  --container-sm: 640px;
-  --container-md: 768px;
-  --container-lg: 1024px;
-  --container-xl: 1280px;
+function startExercise(kind){
+  currentEx = kind;
+  exIndex = 0;
+  exScore = 0;
+  const N = (kind==='mc'?30:(kind==='fill'?30:20));
+  if(kind==='mc'){ exBank = shuffle(E1_MC).slice(0, N); }
+  else if(kind==='fill'){ exBank = shuffle(E2_FILL).slice(0, N); }
+  else { exBank = shuffle(E3_REL).slice(0, N); }
+  go('exerciseBox');
+  $('#exLabel').textContent =
+    kind==='mc' ? 'Ejercicio 1 — Multiple Choice' :
+    kind==='fill' ? 'Ejercicio 2 — Fill Blanks' :
+    'Ejercicio 3 — Relativos';
+  renderExercise();
+}
+$$('#exercises .btn').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    const kind = b.dataset.start;
+    if(kind) startExercise(kind);
+  });
+});
+
+function setFeedback(ok, text){
+  const el = $('#exFeedback');
+  el.innerHTML = text;
+  el.style.color = ok ? '#065f46' : '#991b1b';
 }
 
-/* Dark mode colors */
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* RGB versions for opacity control (Dark Mode) */
-    --color-gray-400-rgb: 119, 124, 124;
-    --color-teal-300-rgb: 50, 184, 198;
-    --color-gray-300-rgb: 167, 169, 169;
-    --color-gray-200-rgb: 245, 245, 245;
+function renderExercise(){
+  const total = exBank.length;
+  $('#exCounter').textContent = `${exIndex+1} / ${total}`;
+  setFeedback(true,'');
+  const item = exBank[exIndex];
 
-    /* Background color tokens (Dark Mode) */
-    --color-bg-1: rgba(29, 78, 216, 0.15); /* Dark blue */
-    --color-bg-2: rgba(180, 83, 9, 0.15); /* Dark yellow */
-    --color-bg-3: rgba(21, 128, 61, 0.15); /* Dark green */
-    --color-bg-4: rgba(185, 28, 28, 0.15); /* Dark red */
-    --color-bg-5: rgba(107, 33, 168, 0.15); /* Dark purple */
-    --color-bg-6: rgba(194, 65, 12, 0.15); /* Dark orange */
-    --color-bg-7: rgba(190, 24, 93, 0.15); /* Dark pink */
-    --color-bg-8: rgba(8, 145, 178, 0.15); /* Dark cyan */
+  if(currentEx==='mc'){
+    $('#mcBox').style.display='block';
+    $('#inputBox').style.display='none';
+    $('#nextMCBtn').style.display='none';  // <--- AGREGA ESTA LÍNEA
+    $('#hintSpan').textContent='';
+    $('#exQuestion').textContent = item.q;
+    const box = $('#mcOptions');
+    box.innerHTML = '';
+    const opts = shuffle(item.opts.slice());
+    opts.forEach(opt=>{
+      const div = document.createElement('div');
+      div.className = 'option';
+      div.textContent = opt;
+      div.addEventListener('click', ()=>{
+        const correct = (opt===item.a);
+        if(correct){ div.classList.add('correct'); setFeedback(true, '✔ Correcto'); exScore++; }
+  	else{ div.classList.add('wrong'); setFeedback(false, '✗ Incorrecto. Correcta: '+item.a+(item.exp?(' — '+item.exp):'')); }
+  	$$('.option').forEach(o=>o.style.pointerEvents='none');
+  	$('#nextMCBtn').style.display='inline-flex';  // <--- AGREGA ESTA LÍNEA
+  	// setTimeout(nextStep, 650);
+	});
 
-    /* Semantic Color Tokens (Dark Mode) */
-    --color-background: var(--color-charcoal-700);
-    --color-surface: var(--color-charcoal-800);
-    --color-text: var(--color-gray-200);
-    --color-text-secondary: rgba(var(--color-gray-300-rgb), 0.7);
-    --color-primary: var(--color-teal-300);
-    --color-primary-hover: var(--color-teal-400);
-    --color-primary-active: var(--color-teal-800);
-    --color-secondary: rgba(var(--color-gray-400-rgb), 0.15);
-    --color-secondary-hover: rgba(var(--color-gray-400-rgb), 0.25);
-    --color-secondary-active: rgba(var(--color-gray-400-rgb), 0.3);
-    --color-border: rgba(var(--color-gray-400-rgb), 0.3);
-    --color-error: var(--color-red-400);
-    --color-success: var(--color-teal-300);
-    --color-warning: var(--color-orange-400);
-    --color-info: var(--color-gray-300);
-    --color-focus-ring: rgba(var(--color-teal-300-rgb), 0.4);
-    --color-btn-primary-text: var(--color-slate-900);
-    --color-card-border: rgba(var(--color-gray-400-rgb), 0.2);
-    --color-card-border-inner: rgba(var(--color-gray-400-rgb), 0.15);
-    --shadow-inset-sm: inset 0 1px 0 rgba(255, 255, 255, 0.1),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.15);
-    --button-border-secondary: rgba(var(--color-gray-400-rgb), 0.2);
-    --color-border-secondary: rgba(var(--color-gray-400-rgb), 0.2);
-    --color-select-caret: rgba(var(--color-gray-200-rgb), 0.8);
-
-    /* Common style patterns - updated for dark mode */
-    --focus-ring: 0 0 0 3px var(--color-focus-ring);
-    --focus-outline: 2px solid var(--color-primary);
-    --status-bg-opacity: 0.15;
-    --status-border-opacity: 0.25;
-    --select-caret-light: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23134252' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-    --select-caret-dark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23f5f5f5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-
-    /* RGB versions for dark mode */
-    --color-success-rgb: var(--color-teal-300-rgb);
-    --color-error-rgb: var(--color-red-400-rgb);
-    --color-warning-rgb: var(--color-orange-400-rgb);
-    --color-info-rgb: var(--color-gray-300-rgb);
+      box.appendChild(div);
+    });
+  }else if(currentEx==='fill'){
+    $('#mcBox').style.display='none';
+    $('#inputBox').style.display='block';
+    $('#exInput').value='';
+    $('#exInput').focus();
+    $('#hintSpan').textContent = '(Pista en español entre paréntesis)';
+    $('#exQuestion').textContent = item.q;
+  }else{
+    $('#mcBox').style.display='none';
+    $('#inputBox').style.display='block';
+    $('#exInput').value='';
+    $('#exInput').focus();
+    $('#hintSpan').textContent = '(Relativos: who, which, whose, where, when, why; “that” cuando se permita; omitir relativo en defining cuando se pueda)';
+    $('#exQuestion').textContent = item.es;
   }
 }
 
-/* Data attribute for manual theme switching */
-[data-color-scheme="dark"] {
-  /* RGB versions for opacity control (dark mode) */
-  --color-gray-400-rgb: 119, 124, 124;
-  --color-teal-300-rgb: 50, 184, 198;
-  --color-gray-300-rgb: 167, 169, 169;
-  --color-gray-200-rgb: 245, 245, 245;
+function checkInputAnswer(){
+  const item = exBank[exIndex];
+  const user = norm($('#exInput').value);
+  let ok=false, explain='';
+  if(currentEx==='fill'){
+    const answers = item.a.map(norm);
+    ok = answers.includes(user);
+    if(!ok){ explain = '✗ Incorrecto. Posibles: '+item.a.join(' | '); }
+  }else if(currentEx==='rel'){
+    const answers = item.en.map(norm);
+    ok = answers.includes(user);
+    if(!ok){ explain = '✗ Incorrecto. Posibles: '+item.en.join(' | '); }
+  }
+  if(ok){ setFeedback(true,'✔ Correcto'); exScore++; }
+  else{ setFeedback(false, explain); }
+  setTimeout(nextStep, 700);
+}
+$('#submitAnswer').addEventListener('click', checkInputAnswer);
+$('#skipBtn').addEventListener('click', nextStep);
+$('#nextMCBtn').addEventListener('click', nextStep);  // <--- AGREGA ESTA LÍNEA
+$('#quitExercise').addEventListener('click', ()=>go('exercises'));
 
-  /* Colorful background palette - Dark Mode */
-  --color-bg-1: rgba(29, 78, 216, 0.15); /* Dark blue */
-  --color-bg-2: rgba(180, 83, 9, 0.15); /* Dark yellow */
-  --color-bg-3: rgba(21, 128, 61, 0.15); /* Dark green */
-  --color-bg-4: rgba(185, 28, 28, 0.15); /* Dark red */
-  --color-bg-5: rgba(107, 33, 168, 0.15); /* Dark purple */
-  --color-bg-6: rgba(194, 65, 12, 0.15); /* Dark orange */
-  --color-bg-7: rgba(190, 24, 93, 0.15); /* Dark pink */
-  --color-bg-8: rgba(8, 145, 178, 0.15); /* Dark cyan */
-
-  /* Semantic Color Tokens (Dark Mode) */
-  --color-background: var(--color-charcoal-700);
-  --color-surface: var(--color-charcoal-800);
-  --color-text: var(--color-gray-200);
-  --color-text-secondary: rgba(var(--color-gray-300-rgb), 0.7);
-  --color-primary: var(--color-teal-300);
-  --color-primary-hover: var(--color-teal-400);
-  --color-primary-active: var(--color-teal-800);
-  --color-secondary: rgba(var(--color-gray-400-rgb), 0.15);
-  --color-secondary-hover: rgba(var(--color-gray-400-rgb), 0.25);
-  --color-secondary-active: rgba(var(--color-gray-400-rgb), 0.3);
-  --color-border: rgba(var(--color-gray-400-rgb), 0.3);
-  --color-error: var(--color-red-400);
-  --color-success: var(--color-teal-300);
-  --color-warning: var(--color-orange-400);
-  --color-info: var(--color-gray-300);
-  --color-focus-ring: rgba(var(--color-teal-300-rgb), 0.4);
-  --color-btn-primary-text: var(--color-slate-900);
-  --color-card-border: rgba(var(--color-gray-400-rgb), 0.15);
-  --color-card-border-inner: rgba(var(--color-gray-400-rgb), 0.15);
-  --shadow-inset-sm: inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.15);
-  --color-border-secondary: rgba(var(--color-gray-400-rgb), 0.2);
-  --color-select-caret: rgba(var(--color-gray-200-rgb), 0.8);
-
-  /* Common style patterns - updated for dark mode */
-  --focus-ring: 0 0 0 3px var(--color-focus-ring);
-  --focus-outline: 2px solid var(--color-primary);
-  --status-bg-opacity: 0.15;
-  --status-border-opacity: 0.25;
-  --select-caret-light: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23134252' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  --select-caret-dark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23f5f5f5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-
-  /* RGB versions for dark mode */
-  --color-success-rgb: var(--color-teal-300-rgb);
-  --color-error-rgb: var(--color-red-400-rgb);
-  --color-warning-rgb: var(--color-orange-400-rgb);
-  --color-info-rgb: var(--color-gray-300-rgb);
+function nextStep(){
+  exIndex++;
+  if(exIndex>=exBank.length){
+    const pct = Math.round((exScore/exBank.length)*100);
+    if(currentEx==='mc') state.scores.mc = pct;
+    if(currentEx==='fill') state.scores.fill = pct;
+    if(currentEx==='rel') state.scores.rel = pct;
+    updateScoresUI(true);
+    go('scores');
+    return;
+  }
+  renderExercise();
 }
 
-[data-color-scheme="light"] {
-  /* RGB versions for opacity control (light mode) */
-  --color-brown-600-rgb: 94, 82, 64;
-  --color-teal-500-rgb: 33, 128, 141;
-  --color-slate-900-rgb: 19, 52, 59;
-
-  /* Semantic Color Tokens (Light Mode) */
-  --color-background: var(--color-cream-50);
-  --color-surface: var(--color-cream-100);
-  --color-text: var(--color-slate-900);
-  --color-text-secondary: var(--color-slate-500);
-  --color-primary: var(--color-teal-500);
-  --color-primary-hover: var(--color-teal-600);
-  --color-primary-active: var(--color-teal-700);
-  --color-secondary: rgba(var(--color-brown-600-rgb), 0.12);
-  --color-secondary-hover: rgba(var(--color-brown-600-rgb), 0.2);
-  --color-secondary-active: rgba(var(--color-brown-600-rgb), 0.25);
-  --color-border: rgba(var(--color-brown-600-rgb), 0.2);
-  --color-btn-primary-text: var(--color-cream-50);
-  --color-card-border: rgba(var(--color-brown-600-rgb), 0.12);
-  --color-card-border-inner: rgba(var(--color-brown-600-rgb), 0.12);
-  --color-error: var(--color-red-500);
-  --color-success: var(--color-teal-500);
-  --color-warning: var(--color-orange-500);
-  --color-info: var(--color-slate-500);
-  --color-focus-ring: rgba(var(--color-teal-500-rgb), 0.4);
-
-  /* RGB versions for light mode */
-  --color-success-rgb: var(--color-teal-500-rgb);
-  --color-error-rgb: var(--color-red-500-rgb);
-  --color-warning-rgb: var(--color-orange-500-rgb);
-  --color-info-rgb: var(--color-slate-500-rgb);
+// Puntuaciones
+function colored(valEl, pct){
+  valEl.textContent = (pct==null?'—':pct+'%');
+  valEl.classList.remove('red','green');
+  if(pct==null) return;
+  if(pct>=90){ valEl.classList.add('green'); }
+  else{ valEl.classList.add('red'); }
 }
-
-/* Base styles */
-html {
-  font-size: var(--font-size-base);
-  font-family: var(--font-family-base);
-  line-height: var(--line-height-normal);
-  color: var(--color-text);
-  background-color: var(--color-background);
-  -webkit-font-smoothing: antialiased;
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: inherit;
-}
-
-/* Typography */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  margin: 0;
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-tight);
-  color: var(--color-text);
-  letter-spacing: var(--letter-spacing-tight);
-}
-
-h1 {
-  font-size: var(--font-size-4xl);
-}
-h2 {
-  font-size: var(--font-size-3xl);
-}
-h3 {
-  font-size: var(--font-size-2xl);
-}
-h4 {
-  font-size: var(--font-size-xl);
-}
-h5 {
-  font-size: var(--font-size-lg);
-}
-h6 {
-  font-size: var(--font-size-md);
-}
-
-p {
-  margin: 0 0 var(--space-16) 0;
-}
-
-a {
-  color: var(--color-primary);
-  text-decoration: none;
-  transition: color var(--duration-fast) var(--ease-standard);
-}
-
-a:hover {
-  color: var(--color-primary-hover);
-}
-
-code,
-pre {
-  font-family: var(--font-family-mono);
-  font-size: calc(var(--font-size-base) * 0.95);
-  background-color: var(--color-secondary);
-  border-radius: var(--radius-sm);
-}
-
-code {
-  padding: var(--space-1) var(--space-4);
-}
-
-pre {
-  padding: var(--space-16);
-  margin: var(--space-16) 0;
-  overflow: auto;
-  border: 1px solid var(--color-border);
-}
-
-pre code {
-  background: none;
-  padding: 0;
-}
-
-/* Buttons */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-8) var(--space-16);
-  border-radius: var(--radius-base);
-  font-size: var(--font-size-base);
-  font-weight: 500;
-  line-height: 1.5;
-  cursor: pointer;
-  transition: all var(--duration-normal) var(--ease-standard);
-  border: none;
-  text-decoration: none;
-  position: relative;
-}
-
-.btn:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
-}
-
-.btn--primary {
-  background: var(--color-primary);
-  color: var(--color-btn-primary-text);
-}
-
-.btn--primary:hover {
-  background: var(--color-primary-hover);
-}
-
-.btn--primary:active {
-  background: var(--color-primary-active);
-}
-
-.btn--secondary {
-  background: var(--color-secondary);
-  color: var(--color-text);
-}
-
-.btn--secondary:hover {
-  background: var(--color-secondary-hover);
-}
-
-.btn--secondary:active {
-  background: var(--color-secondary-active);
-}
-
-.btn--outline {
-  background: transparent;
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
-}
-
-.btn--outline:hover {
-  background: var(--color-secondary);
-}
-
-.btn--sm {
-  padding: var(--space-4) var(--space-12);
-  font-size: var(--font-size-sm);
-  border-radius: var(--radius-sm);
-}
-
-.btn--lg {
-  padding: var(--space-10) var(--space-20);
-  font-size: var(--font-size-lg);
-  border-radius: var(--radius-md);
-}
-
-.btn--full-width {
-  width: 100%;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Form elements */
-.form-control {
-  display: block;
-  width: 100%;
-  padding: var(--space-8) var(--space-12);
-  font-size: var(--font-size-md);
-  line-height: 1.5;
-  color: var(--color-text);
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-base);
-  transition: border-color var(--duration-fast) var(--ease-standard),
-    box-shadow var(--duration-fast) var(--ease-standard);
-}
-
-textarea.form-control {
-  font-family: var(--font-family-base);
-  font-size: var(--font-size-base);
-}
-
-select.form-control {
-  padding: var(--space-8) var(--space-12);
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  background-image: var(--select-caret-light);
-  background-repeat: no-repeat;
-  background-position: right var(--space-12) center;
-  background-size: 16px;
-  padding-right: var(--space-32);
-}
-
-/* Add a dark mode specific caret */
-@media (prefers-color-scheme: dark) {
-  select.form-control {
-    background-image: var(--select-caret-dark);
+function updateScoresUI(showMsg=false){
+  $('#studentNameScore').innerHTML = '<strong style="font-weight:900">'+(state.student.first||'Alumno')+' '+(state.student.last||'')+'</strong>';
+  $('#courseScore').textContent = state.student.course||'4ESO';
+  colored($('#s1'), state.scores.mc);
+  colored($('#s2'), state.scores.fill);
+  colored($('#s3'), state.scores.rel);
+  const vals = [state.scores.mc, state.scores.fill, state.scores.rel].filter(v=>v!=null);
+  const avg = vals.length? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : null;
+  colored($('#sAll'), avg);
+  if(!showMsg){ $('#statusMsg').textContent=''; return; }
+  const all = [state.scores.mc, state.scores.fill, state.scores.rel];
+  const okAll = all.every(v=>v!=null && v>=90);
+  const anyBad = all.some(v=>v!=null && v<90);
+  if(anyBad){
+    $('#statusMsg').innerHTML = '<span style="color:#b91c1c;font-weight:900">❌ No has alcanzado el nivel. Por favor, repite este ejercicio.</span>';
+  }else if(okAll){
+    $('#statusMsg').innerHTML = '<span style="color:#047857;font-weight:900">✅ ¡Felicidades! Has alcanzado el nivel.</span>';
+  }else{
+    $('#statusMsg').innerHTML = '<span class="muted">Completa todos los ejercicios para ver el estado final.</span>';
   }
 }
 
-/* Also handle data-color-scheme */
-[data-color-scheme="dark"] select.form-control {
-  background-image: var(--select-caret-dark);
-}
-
-[data-color-scheme="light"] select.form-control {
-  background-image: var(--select-caret-light);
-}
-
-.form-control:focus {
-  border-color: var(--color-primary);
-  outline: var(--focus-outline);
-}
-
-.form-label {
-  display: block;
-  margin-bottom: var(--space-8);
-  font-weight: var(--font-weight-medium);
-  font-size: var(--font-size-sm);
-}
-
-.form-group {
-  margin-bottom: var(--space-16);
-}
-
-/* Card component */
-.card {
-  background-color: var(--color-surface);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-card-border);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  transition: box-shadow var(--duration-normal) var(--ease-standard);
-}
-
-.card:hover {
-  box-shadow: var(--shadow-md);
-}
-
-.card__body {
-  padding: var(--space-16);
-}
-
-.card__header,
-.card__footer {
-  padding: var(--space-16);
-  border-bottom: 1px solid var(--color-card-border-inner);
-}
-
-/* Status indicators - simplified with CSS variables */
-.status {
-  display: inline-flex;
-  align-items: center;
-  padding: var(--space-6) var(--space-12);
-  border-radius: var(--radius-full);
-  font-weight: var(--font-weight-medium);
-  font-size: var(--font-size-sm);
-}
-
-.status--success {
-  background-color: rgba(
-    var(--color-success-rgb, 33, 128, 141),
-    var(--status-bg-opacity)
-  );
-  color: var(--color-success);
-  border: 1px solid
-    rgba(var(--color-success-rgb, 33, 128, 141), var(--status-border-opacity));
-}
-
-.status--error {
-  background-color: rgba(
-    var(--color-error-rgb, 192, 21, 47),
-    var(--status-bg-opacity)
-  );
-  color: var(--color-error);
-  border: 1px solid
-    rgba(var(--color-error-rgb, 192, 21, 47), var(--status-border-opacity));
-}
-
-.status--warning {
-  background-color: rgba(
-    var(--color-warning-rgb, 168, 75, 47),
-    var(--status-bg-opacity)
-  );
-  color: var(--color-warning);
-  border: 1px solid
-    rgba(var(--color-warning-rgb, 168, 75, 47), var(--status-border-opacity));
-}
-
-.status--info {
-  background-color: rgba(
-    var(--color-info-rgb, 98, 108, 113),
-    var(--status-bg-opacity)
-  );
-  color: var(--color-info);
-  border: 1px solid
-    rgba(var(--color-info-rgb, 98, 108, 113), var(--status-border-opacity));
-}
-
-/* Container layout */
-.container {
-  width: 100%;
-  margin-right: auto;
-  margin-left: auto;
-  padding-right: var(--space-16);
-  padding-left: var(--space-16);
-}
-
-@media (min-width: 640px) {
-  .container {
-    max-width: var(--container-sm);
-  }
-}
-@media (min-width: 768px) {
-  .container {
-    max-width: var(--container-md);
-  }
-}
-@media (min-width: 1024px) {
-  .container {
-    max-width: var(--container-lg);
-  }
-}
-@media (min-width: 1280px) {
-  .container {
-    max-width: var(--container-xl);
-  }
-}
-
-/* Utility classes */
-.flex {
-  display: flex;
-}
-.flex-col {
-  flex-direction: column;
-}
-.items-center {
-  align-items: center;
-}
-.justify-center {
-  justify-content: center;
-}
-.justify-between {
-  justify-content: space-between;
-}
-.gap-4 {
-  gap: var(--space-4);
-}
-.gap-8 {
-  gap: var(--space-8);
-}
-.gap-16 {
-  gap: var(--space-16);
-}
-
-.m-0 {
-  margin: 0;
-}
-.mt-8 {
-  margin-top: var(--space-8);
-}
-.mb-8 {
-  margin-bottom: var(--space-8);
-}
-.mx-8 {
-  margin-left: var(--space-8);
-  margin-right: var(--space-8);
-}
-.my-8 {
-  margin-top: var(--space-8);
-  margin-bottom: var(--space-8);
-}
-
-.p-0 {
-  padding: 0;
-}
-.py-8 {
-  padding-top: var(--space-8);
-  padding-bottom: var(--space-8);
-}
-.px-8 {
-  padding-left: var(--space-8);
-  padding-right: var(--space-8);
-}
-.py-16 {
-  padding-top: var(--space-16);
-  padding-bottom: var(--space-16);
-}
-.px-16 {
-  padding-left: var(--space-16);
-  padding-right: var(--space-16);
-}
-
-.block {
-  display: block;
-}
-.hidden {
-  display: none;
-}
-
-/* Accessibility */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
-
-:focus-visible {
-  outline: var(--focus-outline);
-  outline-offset: 2px;
-}
-
-/* Dark mode specifics */
-[data-color-scheme="dark"] .btn--outline {
-  border: 1px solid var(--color-border-secondary);
-}
-
-@font-face {
-  font-family: 'FKGroteskNeue';
-  src: url('https://r2cdn.perplexity.ai/fonts/FKGroteskNeue.woff2')
-    format('woff2');
-}
-
-/* END PERPLEXITY DESIGN SYSTEM */
-```css
-/* styles.css */
-:root {
-  --primary: var(--color-primary);
-  --accent: var(--color-success);
-  --danger: var(--color-error);
-  --muted: var(--color-text-secondary);
-  --bg: var(--color-background);
-  --card: var(--color-surface);
-  --ink: var(--color-text);
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: var(--font-family-base);
-  color: var(--color-text);
-  background: var(--color-background);
-  font-size: var(--font-size-base);
-  line-height: var(--line-height-normal);
-}
-
-header, footer {
-  background: var(--color-slate-900);
-  color: var(--color-cream-50);
-  padding: var(--space-12) var(--space-16);
-}
-
-header h1 {
-  margin: 0;
-  font-size: var(--font-size-2xl);
-  letter-spacing: var(--letter-spacing-tight);
-  font-weight: var(--font-weight-semibold);
-}
-
-header .student {
-  margin-top: var(--space-6);
-  font-size: var(--font-size-sm);
-  opacity: 0.9;
-}
-
-nav.top {
-  background: var(--color-charcoal-800);
-  display: flex;
-  gap: var(--space-8);
-  flex-wrap: wrap;
-  padding: var(--space-8) var(--space-12);
-}
-
-nav.top button {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
-  padding: var(--space-8) var(--space-12);
-  border-radius: var(--radius-base);
-  cursor: pointer;
-  font-weight: var(--font-weight-semibold);
-  font-size: var(--font-size-sm);
-  transition: all var(--duration-fast) var(--ease-standard);
-}
-
-nav.top button:hover {
-  background: var(--color-secondary-hover);
-}
-
-nav.top button.active {
-  background: var(--color-secondary);
-  border-color: var(--color-primary);
-}
-
-main {
-  max-width: 980px;
-  margin: var(--space-16) auto;
-  padding: 0 var(--space-12);
-}
-
-.card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-card-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-16);
-  margin-bottom: var(--space-16);
-  box-shadow: var(--shadow-sm);
-}
-
-.row {
-  display: flex;
-  gap: var(--space-12);
-  flex-wrap: wrap;
-}
-
-.row > * {
-  flex: 1 1 280px;
-}
-
-label {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  margin-bottom: var(--space-6);
-  display: block;
-  color: var(--color-text);
-}
-
-input, select {
-  width: 100%;
-  padding: var(--space-10);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-base);
-  font-size: var(--font-size-base);
-  background: var(--color-surface);
-  color: var(--color-text);
-  font-family: var(--font-family-base);
-  transition: border-color var(--duration-fast) var(--ease-standard);
-}
-
-input:focus, select:focus {
-  border-color: var(--color-primary);
-  outline: var(--focus-outline);
-}
-
-select {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  background-image: var(--select-caret-light);
-  background-repeat: no-repeat;
-  background-position: right var(--space-12) center;
-  background-size: 16px;
-  padding-right: var(--space-32);
-}
-
-@media (prefers-color-scheme: dark) {
-  select {
-    background-image: var(--select-caret-dark);
-  }
-}
-
-[data-color-scheme="dark"] select {
-  background-image: var(--select-caret-dark);
-}
-
-[data-color-scheme="light"] select {
-  background-image: var(--select-caret-light);
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-8);
-  background: var(--color-primary);
-  color: var(--color-btn-primary-text);
-  border: none;
-  border-radius: var(--radius-md);
-  padding: var(--space-10) var(--space-16);
-  cursor: pointer;
-  font-weight: var(--font-weight-bold);
-  font-size: var(--font-size-base);
-  transition: all var(--duration-normal) var(--ease-standard);
-}
-
-.btn:hover {
-  background: var(--color-primary-hover);
-}
-
-.btn:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
-}
-
-.btn.secondary {
-  background: var(--color-secondary);
-  color: var(--color-text);
-}
-
-.btn.secondary:hover {
-  background: var(--color-secondary-hover);
-}
-
-.btn.ghost {
-  background: transparent;
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
-}
-
-.btn.ghost:hover {
-  background: var(--color-secondary);
-}
-
-.grid-3 {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: var(--space-16);
-}
-
-@media (max-width: 860px) {
-  .grid-3 {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 480px) {
-  .grid-3 {
-    grid-template-columns: 1fr;
-    gap: var(--space-12);
-  }
-  
-  .row {
-    flex-direction: column;
-    gap: var(--space-8);
-  }
-  
-  .row > * {
-    flex: 1 1 auto;
-  }
-  
-  main {
-    margin: var(--space-12) auto;
-    padding: 0 var(--space-8);
-  }
-  
-  .card {
-    padding: var(--space-12);
-    margin-bottom: var(--space-12);
-  }
-  
-  nav.top {
-    padding: var(--space-6) var(--space-8);
-    gap: var(--space-6);
-  }
-  
-  nav.top button {
-    padding: var(--space-6) var(--space-10);
-    font-size: var(--font-size-xs);
-  }
-  
-  header, footer {
-    padding: var(--space-10) var(--space-12);
-  }
-  
-  header h1 {
-    font-size: var(--font-size-xl);
-  }
-  
-  .flashcard {
-    padding: var(--space-16);
-    min-height: 140px;
-  }
-  
-  .flash-front .es-translation {
-    font-size: var(--font-size-lg);
-  }
-  
-  .flash-back .en-head {
-    font-size: var(--font-size-2xl);
-  }
-}
-
-.tag {
-  display: inline-block;
-  padding: var(--space-4) var(--space-8);
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-xs);
-  border: 1px solid var(--color-border);
-  color: var(--color-text-secondary);
-  background: var(--color-secondary);
-}
-
-.muted {
-  color: var(--color-text-secondary);
-}
-
-.center {
-  text-align: center;
-}
-
-.flashcard {
-  position: relative;
-  min-height: 180px;
-  border-radius: var(--radius-lg);
-  border: 1px dashed var(--color-primary);
-  background: var(--color-bg-1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-24);
-  cursor: pointer;
-  transition: all var(--duration-normal) var(--ease-standard);
-}
-
-.flashcard:hover {
-  border-style: solid;
-  background: var(--color-bg-1);
-}
-
-.flash-face {
-  max-width: 680px;
-  text-align: center;
-}
-
-.flash-front .es-translation {
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-primary);
-}
-
-.flash-front .es-example {
-  margin-top: var(--space-8);
-  font-size: var(--font-size-base);
-  color: var(--color-text-secondary);
-}
-
-.flash-back .en-head {
-  font-size: var(--font-size-3xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-primary);
-}
-
-.flash-back .en-example {
-  margin-top: var(--space-8);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-}
-
-.flash-actions {
-  display: flex;
-  gap: var(--space-8);
-  justify-content: center;
-  margin-top: var(--space-12);
-}
-
-.question {
-  font-size: var(--font-size-lg);
-  margin-bottom: var(--space-10);
-  font-weight: var(--font-weight-medium);
-}
-
-.options {
-  display: grid;
-  gap: var(--space-8);
-}
-
-.option {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-10) var(--space-12);
-  cursor: pointer;
-  background: var(--color-surface);
-  transition: all var(--duration-fast) var(--ease-standard);
-  color: var(--color-text);
-}
-
-.option:hover {
-  border-color: var(--color-primary);
-  background: var(--color-bg-1);
-}
-
-.option.correct {
-  border-color: var(--color-success);
-  background: rgba(var(--color-success-rgb), 0.1);
-  color: var(--color-success);
-}
-
-.option.wrong {
-  border-color: var(--color-error);
-  background: rgba(var(--color-error-rgb), 0.1);
-  color: var(--color-error);
-}
-
-.feedback {
-  margin-top: var(--space-8);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-}
-
-.counter {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  margin-top: var(--space-4);
-}
-
-.pill {
-  display: inline-block;
-  padding: var(--space-4) var(--space-8);
-  border-radius: var(--radius-full);
-  background: var(--color-bg-8);
-  border: 1px solid var(--color-teal-300);
-  color: var(--color-teal-700);
-  font-size: var(--font-size-xs);
-}
-
-.score-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-10) var(--space-12);
-  background: var(--color-surface);
-  margin-top: var(--space-8);
-}
-
-.score-val {
-  font-weight: var(--font-weight-bold);
-}
-
-.score-val.red {
-  color: var(--color-error);
-}
-
-.score-val.green {
-  color: var(--color-success);
-}
-
-footer {
-  margin-top: var(--space-24);
-  font-size: var(--font-size-xs);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.brand {
-  opacity: 0.85;
-}
-
-.actions {
-  margin-top: var(--space-12);
-  display: flex;
-  gap: var(--space-8);
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--space-12);
-  flex-wrap: wrap;
-  gap: var(--space-8);
-}
-
-.toolbar .right {
-  display: flex;
-  gap: var(--space-8);
-}
-
-.input-actions {
-  margin-top: var(--space-8);
-  display: flex;
-  gap: var(--space-8);
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.bottom-actions {
-  margin-top: var(--space-12);
-  display: flex;
-  gap: var(--space-8);
-}
-
-.btns {
-  margin-top: var(--space-10);
-  display: flex;
-  gap: var(--space-8);
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-h2 {
-  margin-top: 0;
-  font-size: var(--font-size-3xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text);
-}
-
-h3 {
-  margin: 0 0 var(--space-6) 0;
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text);
-}
-
-@media (max-width: 480px) {
-  .toolbar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--space-6);
-  }
-  
-  .toolbar .right {
-    justify-content: center;
-  }
-  
-  .actions, .input-actions, .bottom-actions, .btns {
-    flex-direction: column;
-    gap: var(--space-6);
-  }
-  
-  .score-row {
-    padding: var(--space-8) var(--space-10);
-  }
-  
-  footer {
-    flex-direction: column;
-    gap: var(--space-8);
-    text-align: center;
-  }
-}
-```
+// Inicialización
+function init(){
+  go('home');
+  resetFlashcards();
+  // Atajos de teclado en flashcards (opcional)
+  document.addEventListener('keydown', (e)=>{
+    if(document.getElementById('flashcards').style.display==='block'){
+      if(e.code==='Space'){ e.preventDefault(); $('#flashcard').click(); }
+      if(e.key==='ArrowLeft'){ $('#prevCard').click(); }
+      if(e.key==='ArrowRight'){ $('#nextCard').click(); }
+    }
+    if(e.key==='Enter' && $('#exerciseBox').style.display==='block' && $('#inputBox').style.display==='block'){
+      e.preventDefault(); $('#submitAnswer').click();
+    }
+  });
+}
+document.addEventListener('DOMContentLoaded', init);
