@@ -426,7 +426,7 @@ function checkInputAnswer(){
   }
   if(ok){ setFeedback(true,'✔ Correcto'); exScore++; }
   else{ setFeedback(false, explain); }
-  setTimeout(nextStep, 700);
+  // setTimeout(nextStep, 700);
 }
 $('#submitAnswer').addEventListener('click', checkInputAnswer);
 $('#skipBtn').addEventListener('click', nextStep);
